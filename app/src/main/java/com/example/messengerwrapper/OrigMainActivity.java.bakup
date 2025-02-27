@@ -1,0 +1,70 @@
+package com.example.messengerwrapper;
+
+import android.os.Bundle;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
+import androidx.appcompat.app.AppCompatActivity;
+
+public class MainActivity extends AppCompatActivity {
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        WebView webView = findViewById(R.id.webview);
+        WebSettings webSettings = webView.getSettings();
+
+        webSettings.setJavaScriptEnabled(true);
+        webSettings.setCacheMode(WebSettings.LOAD_NO_CACHE);
+        webView.clearCache(true);
+        webView.clearHistory();
+        webSettings.setDomStorageEnabled(true);
+        webSettings.setSaveFormData(false);
+        webSettings.setGeolocationEnabled(false);
+        webSettings.setSupportMultipleWindows(false);
+        webSettings.setUserAgentString("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36");
+
+        webView.setWebViewClient(new WebViewClient() {
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                String js = "javascript:(function() {" +
+                            // Adjust page width
+                            "document.body.style.width = '100%';" +
+                            "document.body.style.maxWidth = 'none';" +
+                            "var meta = document.createElement('meta');" +
+                            "meta.name = 'viewport';" +
+                            "meta.content = 'width=device-width, initial-scale=1.0';" +
+                            "document.head.appendChild(meta);" +
+
+                            // Remove left-hand panel/sidebar
+                            "var sidebar = document.querySelector('[role=\"navigation\"], .left-panel, .sidebar, .navigation');" +
+                            "if (sidebar) { sidebar.style.display = 'none'; }" +
+
+                            // Ensure main content takes full width
+                            "var mainContent = document.querySelector('[role=\"main\"], .main-content');" +
+                            "if (mainContent) { mainContent.style.marginLeft = '0px'; mainContent.style.width = '100%'; }" +
+
+                            // Block known tracker scripts
+                            "var scripts = document.querySelectorAll('script[src*=\"analytics\"], script[src*=\"tracking\"], script[src*=\"facebook\"]');" +
+                            "scripts.forEach(function(script) { script.remove(); });" +
+
+                            "})()";
+                view.evaluateJavascript(js, null);
+            }
+        });
+
+        webView.loadUrl("https://www.messenger.com");
+    }
+
+    @Override
+    public void onBackPressed() {
+        WebView webView = findViewById(R.id.webview);
+        if (webView.canGoBack()) {
+            webView.goBack();
+        } else {
+            super.onBackPressed();
+        }
+    }
+}
+
